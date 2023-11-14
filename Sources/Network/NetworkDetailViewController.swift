@@ -362,15 +362,21 @@ class NetworkDetailViewController: UITableViewController, MFMailComposeViewContr
         let alert: UIAlertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         
         // create an action
-        let firstAction: UIAlertAction = UIAlertAction(title: "share via email", style: .default) { [weak self] action -> Void in
+        let firstAction: UIAlertAction = UIAlertAction(title: "Share via email", style: .default) { [weak self] action -> Void in
             if let mailComposeViewController = self?.configureMailComposer() {
                 self?.present(mailComposeViewController, animated: true, completion: nil)
             }
         }
         
-        let secondAction: UIAlertAction = UIAlertAction(title: "copy to clipboard", style: .default) { [weak self] action -> Void in
+        let secondAction: UIAlertAction = UIAlertAction(title: "Copy to clipboard", style: .default) { [weak self] action -> Void in
             _ = self?.configureMailComposer(true)
             UIPasteboard.general.string = self?.messageBody
+        }
+        
+        let curlAction = UIAlertAction(title: "Copy cURL", style: .default) { _ in
+            if let httpModel = self.httpModel {
+                UIPasteboard.general.string = httpModel.cURLDescription()
+            }
         }
         
         let moreAction: UIAlertAction = UIAlertAction(title: "more", style: .default) { [weak self] action -> Void in
@@ -392,6 +398,7 @@ class NetworkDetailViewController: UITableViewController, MFMailComposeViewContr
         
         // add actions
         alert.addAction(secondAction)
+        alert.addAction(curlAction)
         alert.addAction(firstAction)
         alert.addAction(moreAction)
         alert.addAction(cancelAction)
@@ -519,5 +526,29 @@ extension NetworkDetailViewController {
                 self.present(alert, animated: true, completion: nil)
             }
         }
+    }
+}
+
+extension _HttpModel {
+    func cURLDescription() -> String {
+        var components = ["curl \"\(url?.absoluteString ?? "<unknown url>")\""]
+
+        if let method, method != "GET" {
+            components.append("-X \(method)")
+        }
+
+        for (field, value) in requestHeaderFields {
+            let valueString = "\(value)".replacingOccurrences(of: "\"", with: "\\\"")
+            components.append("-H \"\(field): \(valueString)\"")
+        }
+
+        if let requestBodyString = String(data: requestData, encoding: .utf8), requestBodyString.isEmpty == false {
+            var escapedBody = requestBodyString.replacingOccurrences(of: "\\\"", with: "\\\\\"")
+            escapedBody = escapedBody.replacingOccurrences(of: "\"", with: "\\\"")
+
+            components.append("-d \"\(escapedBody)\"")
+        }
+
+        return components.joined(separator: " \\\n")
     }
 }

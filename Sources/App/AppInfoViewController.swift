@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import InAppViewDebugger
 
 class AppInfoViewController: UITableViewController {
     
@@ -28,6 +29,8 @@ class AppInfoViewController: UITableViewController {
     @IBOutlet weak var naviItem: UINavigationItem!
     @IBOutlet weak var rnSwitch: UISwitch!
     @IBOutlet weak var uiBlockingSwitch: UISwitch!
+    @IBOutlet weak var interceptURL: UILabel!
+    @IBOutlet weak var viewDebuggerLabel: UILabel!
     
     var naviItemTitleLabel: UILabel?
     
@@ -75,7 +78,17 @@ class AppInfoViewController: UITableViewController {
         slowAnimationsSwitch.addTarget(self, action: #selector(slowAnimationsSwitchChanged), for: UIControl.Event.valueChanged)
         crashSwitch.addTarget(self, action: #selector(crashSwitchChanged), for: UIControl.Event.valueChanged)
         uiBlockingSwitch.addTarget(self, action: #selector(uiBlockingSwitchChanged), for: UIControl.Event.valueChanged)
+        
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(interceptURLTapped))
+        interceptURL.addGestureRecognizer(gesture)
+        interceptURL.isUserInteractionEnabled = true
+        
+        let gesture2 = UITapGestureRecognizer(target: self, action: #selector(viewDebuggerTapped))
+        viewDebuggerLabel.addGestureRecognizer(gesture2)
+        viewDebuggerLabel.isUserInteractionEnabled = true
     }
+    
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -100,6 +113,16 @@ class AppInfoViewController: UITableViewController {
         alert.popoverPresentationController?.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
         
         self.present(alert, animated: true, completion: nil)
+    }
+    
+    @objc func interceptURLTapped() {
+        let interceptURLVC = InterceptURLConfiguration.setup()
+        self.navigationController?.pushViewController(interceptURLVC, animated: true)
+    }
+    
+    @objc func viewDebuggerTapped() {
+        self.dismiss(animated: true)
+        InAppViewDebugger.present()
     }
     
     //MARK: - target action
