@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import InAppViewDebugger
 
 class AppInfoViewController: UITableViewController {
     
@@ -122,7 +121,6 @@ class AppInfoViewController: UITableViewController {
     
     @objc func viewDebuggerTapped() {
         self.dismiss(animated: true)
-        InAppViewDebugger.present()
     }
     
     //MARK: - target action
